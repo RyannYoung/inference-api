@@ -4,7 +4,7 @@ from PIL.Image import Image as PILImage
 import uuid
 import subprocess
 from tempfile import TemporaryDirectory
-
+import pytesseract
 
 def clean_image(img: PILImage) -> PILImage:
     """Cleans an image attempting to make the image more
@@ -13,8 +13,7 @@ def clean_image(img: PILImage) -> PILImage:
     Note: Temporarily creates a file to process
     Note: This does can sometimes result in poorer accuracy
     Note: Requires ImageMagick to be installed
-    Note: Requires textcleaner
-    (http://www.fmwconcepts.com/imagemagick/textcleaner/index.php)
+    Note: Requires textcleaner (http://www.fmwconcepts.com/imagemagick/textcleaner/index.php)
     to be accessible from PATH
 
     Args:
@@ -54,8 +53,7 @@ def evaluate_image(img: PILImage, clean: bool = False) -> str:
 
     Args:
         img (PILImage): The PIL Image to parse
-        clean (bool, optional): Whether to further clean the image for OCR.
-        Defaults to False.
+        clean (bool, optional): Whether to further clean the image for OCR. Defaults to False.
 
     Returns:
         str: The resolved text

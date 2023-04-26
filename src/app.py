@@ -1,184 +1,137 @@
-from io import BytesIO
-from flask import Flask, request, send_file, Response
-from src.lib import (
-    classify_image,
-    classify_image_raw,
+from flask import Flask, request, send_file
+from typing import Literal
+from handling import api_error, format_response
+from lib import (
+    classify,
+    classify_group,
     get_image,
-    grid_images,
     execute_with_threadpool,
 )
-from src.tesseract import evaluate_image
+from tesseract import evaluate_image
+import os
+from PIL.Image import Image
+from models.model_controller import ModelController
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+# Classification Models
+Classifcation = Literal["classify", "ocr"]
+ClassifyModel = Literal["ResNet500"]
 
 # Initialise the flask app
 app = Flask(__name__)
 
 
-@app.route("/image")
-def image():
-    """Provide AI label classifications to a provided image
+# Global reference to the model controller
+model_controller = ModelController()
+model_controller.load_models()
+
+
+@app.route("/")
+def root():
+    """Root dir"""
+    return send_file(f"{dir_path}/../assets/index.html")
+
+
+@app.route("/models")
+def models():
+    """Return information about the current models loaded"""
+    return model_controller.display_models()
+
+
+@app.route("/enrich", methods=["GET", "POST"])
+def enrich():
+    """Classify a single entity through a provided mode and type
 
     Example:
-        "http://app/image?url=https://image/image.png"
+        "http://app/classify?src=https://image/image.png?mode=classify?model?=ResNet
 
     Returns:
-        An annotated version of the input URL source with bounding boxes
-        for classifications
+        A generic enrichment endpoint which requires
+        a source and type classifier.
+
+        Note: Additional query parameters may be required
+        for more complex models.
     """
-    url = request.args.get("url")
 
-    # Get the image and evaluate it
-    img = get_image(url)
+    res = None  # The response message
+    format = None  # The format message
 
-    # Validate the image had been return correctly
-    if img is None:
-        return Response(
-            '"error": "Unable to parse URL to image. Is the endpoint an image and does it exist?',
-            status=400,
-            mimetype="application/json",
-        )
+    # GET REQUEST
+    if request.method == "GET":
+        """Extract params the query keys"""
+        # Source Param & Guard
+        src = request.args.get("src")
+        if src is None:
+            return api_error("url query parameter was not provided")
+        else:
+            src.strip()
 
-    img = classify_image(img)
+        img = get_image(src)
+        if img is None:
+            return api_error("could not generate image from src query paramter")
 
-    # Serve the generated response
-    return serve_pil_image(img)
+        # Mode Param & Guard
+        enrich_mode = request.args.get("mode", default="classify").strip().lower()
 
+        # Model
+        model = request.args.get("model", default="ResNet").strip()
+        model = model_controller.find_model(model)  # Find the model from the controller
 
-@app.route("/image_raw")
-def image_raw():
-    """Evaluate and export an image and it's labels as raw text
+        if model is None:
+            return api_error("model query parameter did not match any loaded models")
 
-    Example:
-        "https://app/image_raw?url=https://image/image.png"
+        # Return format
+        format = request.args.get("format", default="img").strip()
 
-    Returns:
-        A JSON response containing label information for an image
-    """
-    url = request.args.get("url")
+        # Run the specific mode based on the query param
+        match enrich_mode:
+            case "classify":
+                # Run Classification
+                res = classify(img, model, format)
+            case "ocr":
+                # Run OCR
+                res = evaluate_image(img)
+            case _:
+                return api_error("'mode query parameter was invalid")
 
-    # Get the image and evaluate it
-    raw_data = get_image(url)
+    # POST REQUEST
+    if request.method == "POST":
+        """Extract params from the POST body"""
 
-    if raw_data is None:
-        return Response(
-            '"error": "Unable to parse URL to image. Is the endpoint an image and does it exist?',
-            status=400,
-            mimetype="application/json",
-        )
+        json = request.json
+        if json is None:
+            return api_error("invalid JSON in POST body")
 
-    raw_data = classify_image_raw(raw_data)
+        src = json.get("src")
+        if src is None:
+            return api_error("src was not specified as a POST body parameter")
 
-    return raw_data
+        model = json.get("model", "ResNet")
+        model = model_controller.find_model(model)  # Find the model from the controller
+        if model is None:
+            return api_error(
+                f"'model' query parameter did not match any loaded models. Available models {model_controller.display_available_models()}"
+            )
 
+        format = json.get("format", "default")
+        enrich_mode = json.get("mode", "classify")
 
-@app.route("/image_ocr")
-def image_ocr() -> str:
-    url = request.args.get("url")
+        # Create images
+        images = [get_image(url) for url in src]
 
-    # Get the image
-    img = get_image(url)
+        # Filter out the failed images
+        images_filtered: list[Image] = list(filter(lambda x: x is not None, images))  # type: ignore
 
-    if img is None:
-        return Response(
-            '"error": "Unable to parse URL to image. Is the endpoint an image and does it exist?',
-            status=400,
-            mimetype="application/json",
-        )
+        if images_filtered is None:
+            return api_error("No images available to process post filter")
 
-    text = evaluate_image(img)
+        match enrich_mode:
+            case "classify":
+                res = classify_group(images_filtered, model, format)
+            case "ocr":
+                return api_error("OCR is currently unimplemented!")
+            case _:
+                return api_error("'mode query parameter was invalid")
 
-    return text
-
-
-@app.route("/combined", methods=["POST"])
-def image_combined():
-    """Evaluate a JSON POST request list of URLs and perform AI object labelling
-
-    Example JSON POST body:
-        {
-            urls: [
-                "https://image/image.jpg",
-                "https://image/another.png"
-            ]
-        }
-
-    Returns:
-       A single image/jpeg containing AI object detection annotations
-    """
-    urls = request.json["urls"]
-    images = [get_image(url) for url in urls]
-
-    # Filter out the failed images
-    images = list(filter(lambda x: x is not None, images))
-
-    # Combine the images
-    combined_img = grid_images(images)
-
-    return serve_pil_image(combined_img)
-
-
-@app.route("/combined_raw", methods=["POST"])
-def image_combined_raw():
-    """Evaluate a JSON POST request list of URLs and perform AI object labelling
-
-    Example JSON POST body:
-        {
-            urls: [
-                "https://image/image.jpg",
-                "https://image/another.png"
-            ]
-        }
-
-    Returns:
-       A single image/jpeg containing AI object detection annotations
-    """
-    urls = request.json["urls"]
-    images = [get_image(url) for url in urls]
-
-    # Filter out the failed images
-    images = list(filter(lambda x: x is not None, images))
-
-    dataset = execute_with_threadpool(images, classify_image_raw)
-
-    return dataset
-
-
-@app.route("/combined_ocr", methods=["POST"])
-def combined_ocr():
-    """Evaluate a JSON POST request list of URLs and perform AI OCR recognition
-
-    Example JSON POST body:
-        {
-            urls: [
-                "https://image/image_with_some_text.jpg",
-                "https://image/another_with_some_text.png"
-            ]
-        }
-
-    Returns:
-       A single image/jpeg containing AI OCR recognition resolved text
-    """
-    urls = request.json["urls"]
-    images = [get_image(url) for url in urls]
-
-    # Filter out the failed images
-    images = list(filter(lambda x: x is not None, images))
-
-    dataset = execute_with_threadpool(images, evaluate_image)
-
-    return dataset
-
-
-# Enables serving a PIL (pillow image) as a endpoint response
-def serve_pil_image(pil_img):
-    """Converts a PIL (pillow) image to a HTTP image/jpeg response
-
-    Args:
-        pil_img (Image): The PIL image to convert
-
-    Returns:
-        A HTTP response that serves the image
-    """
-    img_io = BytesIO()
-    pil_img.save(img_io, "JPEG", quality=70)
-    img_io.seek(0)
-    return send_file(img_io, mimetype="image/jpeg")
+    return format_response(res, format)
