@@ -54,7 +54,8 @@ class AlexNet(ModelBase):
         with torch.no_grad():
             output = self.model(input_batch)
 
-        # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
+        # The output has unnormalized scores.
+        # To get probabilities, you can run a softmax on it.
         probabilities = torch.nn.functional.softmax(output[0], dim=0)
 
         # Output labels

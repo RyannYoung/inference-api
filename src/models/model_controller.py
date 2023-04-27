@@ -58,8 +58,9 @@ class ModelController:
         models = []
 
         for model in self.models:
-            entry = {"name": model.alias().lower(), "description": model.description()}
-            models.append(entry)
+            models.append(
+                {"name": model.alias().lower(), "description": model.description()}
+            )
 
         return models
 

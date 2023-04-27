@@ -22,7 +22,10 @@ class Blip(ModelBase):
         )
 
     def description(self) -> str:
-        return "Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation. You can use this model for conditional and un-conditional image captioning"
+        return (
+            "Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation."
+            "You can use this model for conditional and un-conditional image captioning"
+        )
 
     def alias(self) -> str:
         return "Blip"

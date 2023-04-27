@@ -3,7 +3,7 @@ from PIL.Image import Image as PILImage
 from PIL import Image, ImageDraw
 from typing import Dict
 import pytesseract
-from pytesseract import Output
+from pytesseract import Output, TesseractNotFoundError
 
 # REQUIRED PARAMETERS
 pytesseract.pytesseract.tesseract_cmd = r"/usr/bin/tesseract"
@@ -17,7 +17,13 @@ class Tesseract(ModelBase):
         return "Tesseract is an open source text recognition (OCR) Engine, available under the Apache 2.0 license. For more information visit https://tesseract-ocr.github.io/"
 
     def load(self) -> None:
-        return super().load()
+        # Check if tesseract is installed in path
+        try:
+            pytesseract.get_tesseract_version()
+        except TesseractNotFoundError:
+            print(
+                "Tesseract is not installed on the system, or accessible from identified PATH"
+            )
 
     def classify_image_raw(self, img: PILImage) -> list[Dict]:
         res = pytesseract.image_to_string(img)
