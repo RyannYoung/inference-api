@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inference API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs-themes@1.0.0/androidstudio.css">
+    <script>hljs.highlightAll();</script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #ffffff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='72' viewBox='0 0 36 72'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23717171' fill-opacity='0.05'%3E%3Cpath d='M2 6h12L8 18 2 6zm18 36h12l-6 12-6-12z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+
+<body style="font-family: 'Roboto', sans-serif; " class="w-screen bg-slate-100 overflow-x-hidden">
+    <!-- Main -->
+    <div class="flex flex-col items-center justify-center m-32 gap-8">
+        <!-- Header -->
+        <div class="flex flex-col justify-center items-center gap-4">
+            <h1
+                class="text-6xl uppercase font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+                Inference API</h1>
+            <span class="text-neutral-500 flex items-center gap-2">Check out the <a href="/api"
+                    class="text-lg font-bold text-green-600 hover:text-orange-600 hover:underline flex gap-1"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6 stroke-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                    </svg> <span>SWAGGER</span> UI</a> for examples on how to use the API and its available
+                options</span>
+            <a href="/api/enrich" class="text-neutral-500">created by Ryan Young</a>
+            <span class="text-neutral-400 text-sm">version 0.1</span>
+        </div>
+
+        <!-- Examples -->
+        <div class="flex flex-col gap-8">
+            <!-- Basic Query Example -->
+            <div class="flex flex-col gap-2">
+                <h2 class="text-xl font-bold text-neutral-600">Basic GET Request</h2>
+                <div style="width: 960px; background: #282b2e;"
+                    class="bg-slate-900 shadow-xl w-full rounded-2xl text-normal overflow-hidden flex border-8">
+                    <pre><code class="bash h-full w-full">curl -X 'GET' \
+    'http://127.0.0.1:5000/api/enrich?src=https://i.imgur.com/4zSAWJ5.jpeg&model=ResNet&format=image' \
+    -H 'accept: */*'</code></pre>
+                </div>
+            </div>
+
+            <!-- Basic POST Example -->
+            <div class="flex flex-col gap-2">
+                <h2 class="text-xl font-bold text-neutral-600">Basic POST Request</h2>
+                <div style="width: 960px; background: #282b2e;"
+                    class="bg-slate-900 shadow-xl w-full rounded-2xl text-normal overflow-hidden flex border-8">
+                    <pre><code class="bash h-full w-full">curl -X 'POST' \
+    'http://127.0.0.1:5000/api/enrich' \
+    -H 'accept: */*' \
+    -H 'Content-Type: application/json' \
+    -d '{
+    "src": [
+        "https://i.imgur.com/4zSAWJ5.jpeg"
+    ],
+    "model": "ResNet",
+    "format": "image"
+    }'</code></pre>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="flex flex-col gap-2">
+                <h2 class="text-xl font-bold text-neutral-600">Result</h2>
+                <img id="result" style="width: 960px; height: 480px;"
+                    class="rounded-2xl shadow-lg object-cover border-8"
+                    src="/api/enrich?src=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fd%2Fd5%2FRetriever_in_water.jpg&model=ResNet&format=image" />
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

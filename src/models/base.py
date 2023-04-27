@@ -51,10 +51,10 @@ class ModelBase(ABC):
         """
         match mode:
             case "classify":
-                if format == "json":
+                if format == "text":
                     return self.classify_image_raw(img)
 
-                if format == "img":
+                if format == "image":
                     # Get the data from the image
                     return self.classify_image(img)
 

@@ -19,7 +19,7 @@ class Vit(ModelBase):
             "google/vit-base-patch16-224"
         )
 
-    def classify_image_raw(self, img: Image) -> list:
+    def classify_image_raw(self, img: Image) -> dict:
 
         inputs = self.processor(img, return_tensors="pt")
 

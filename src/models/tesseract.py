@@ -14,7 +14,7 @@ class Tesseract(ModelBase):
         return "Tesseract"
 
     def description(self) -> str:
-        return "OCR recognition"
+        return "Tesseract is an open source text recognition (OCR) Engine, available under the Apache 2.0 license. For more information visit https://tesseract-ocr.github.io/"
 
     def load(self) -> None:
         return super().load()

@@ -18,8 +18,8 @@ class Gpt(ModelBase):
             "image-to-text", model="nlpconnect/vit-gpt2-image-captioning"
         )
 
-    def classify_image_raw(self, img: PILImage) -> list[Dict]:
-        return {"msg": self.image_to_text(img)["generated_text"][0]}
+    def classify_image_raw(self, img: PILImage) -> dict:
+        return {"msg": self.image_to_text(img)[0]["generated_text"]}
 
     def classify_image(self, img: PILImage) -> PILImage:
         return None

@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+    title: Inference-API
+    version: 1.0.0
+    description: Various ML/AI enrichment endpoints for text and images
+    contact:
+        email: todo@email.com
+    license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
+servers:
+    - url: "/api"
+tags:
+    - name: Enrichment Request
+      description: Enrichment endpoint for requesting and receiving various AI/ML enrichments
+    - name: Available Models
+      description: Display available models and their descriptive use-cases
+paths:
+    "/enrich":
+        get:
+            tags:
+                - Enrichment Request
+            summary: Enrichs an input 'src' with through a selected model using query parameters
+            parameters:
+                - in: query
+                  name: src
+                  schema:
+                      type: string
+                      example: https://upload.wikimedia.org/wikipedia/commons/d/d5/Retriever_in_water.jpg
+                  description: The target (typically an image URL)
+                  required: true
+                - in: query
+                  name: model
+                  schema:
+                      type: string
+                      enum: [ResNet, AlexNet, Vit, Gpt, Blip, Tesseract]
+                  default: ResNet
+                  description: The pre-trained model to enrich with
+                - in: query
+                  name: format
+                  schema:
+                      type: string
+                      enum: [image, text]
+                  default: image
+                  description: The output format
+            responses:
+                "200":
+                    description: OK
+        post:
+            tags:
+                - Enrichment Request
+            summary:
+                Enrichs an input 'src' with through a selected model using POST body
+                parameters
+            requestBody:
+                description: Enrichment Request Post object
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                src:
+                                    type: string[]
+                                    example:
+                                        [
+                                            https://upload.wikimedia.org/wikipedia/commons/d/d5/Retriever_in_water.jpg,
+                                            https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Black_Labrador_Retriever_-_Male_IMG_3323.jpg/1280px-Black_Labrador_Retriever_-_Male_IMG_3323.jpg,
+                                        ]
+                                model:
+                                    type: string
+                                    enum:
+                                        [
+                                            ResNet,
+                                            AlexNet,
+                                            Vit,
+                                            Gpt,
+                                            Blip,
+                                            Tesseract,
+                                        ]
+                                format:
+                                    type: string
+                                    enum: [image, text]
+
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: OK
+    "/models":
+        get:
+            tags:
+                - Available Models
+            summary: Displays in JSON format the available models, and their typical use-cases
+            responses:
+                "200":
+                    description: OK

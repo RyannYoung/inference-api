@@ -37,7 +37,7 @@ class AlexNet(ModelBase):
         return "AlexNet"
 
     def description(self) -> str:
-        return "AlexNet model"
+        return "I need to have a description"
 
     def classify_image(self, img: Image) -> Image:
         return super().classify_image(img)

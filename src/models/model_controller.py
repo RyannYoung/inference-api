@@ -23,7 +23,7 @@ class ModelController:
     """Handles the management of a set of models"""
 
     # The models to control
-    models = []
+    models: list = []
 
     def __init__(self) -> None:
         self.models = preloaded_models
@@ -48,23 +48,20 @@ class ModelController:
                 matched_model = model
         return matched_model
 
-    def display_models(self) -> str:
+    def display_models(self) -> list:
         """Returns a descriptive string about each of the available models
 
         Returns:
             str: A descriptive string about each of the available models
         """
 
-        output_str = ""
+        models = []
 
         for model in self.models:
-            alias = model.alias().lower()
-            description = model.description()
+            entry = {"name": model.alias().lower(), "description": model.description()}
+            models.append(entry)
 
-            formatted = f"\n\n{alias}:\n{description}"
-            output_str += formatted
-
-        return output_str
+        return models
 
     def display_available_models(self) -> str:
         """Returns a list of the available models via their alias"""

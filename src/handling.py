@@ -13,7 +13,9 @@ def api_error(err: str, status_code: int = 400) -> Response:
         Defaults to 400.
     """
     return Response(
-        response=f'{{"error": {err}}}', status=status_code, mimetype="application/json"
+        response=f'{{"error": "{err}"}}',
+        status=status_code,
+        mimetype="application/json",
     )
 
 
@@ -31,7 +33,10 @@ def format_response(data, format) -> Response:
     """
     match format:
         case "img" | "image" | "pic":
-            return serve_pil_image(data)
+            try:
+                return serve_pil_image(data)
+            except:
+                return data
         case "json" | "dict" | "raw" | "text":
             return data  # Python should parse this as json
         case _:

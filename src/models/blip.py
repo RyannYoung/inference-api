@@ -22,7 +22,7 @@ class Blip(ModelBase):
         )
 
     def description(self) -> str:
-        return "BLIPPPP"
+        return "Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation. You can use this model for conditional and un-conditional image captioning"
 
     def alias(self) -> str:
         return "Blip"
@@ -30,11 +30,7 @@ class Blip(ModelBase):
     def classify_image(self, img: PILImage) -> PILImage:
         return super().classify_image(img)
 
-    def classify_image_raw(self, img: PILImage) -> list[Dict]:
-
-        # unconditional image captioning
+    def classify_image_raw(self, img: PILImage) -> dict:
         inputs = self.processor(img, return_tensors="pt")
-
         out_tensor = self.model.generate(**inputs)
-
         return {"msg": self.processor.decode(out_tensor[0], skip_special_tokens=True)}

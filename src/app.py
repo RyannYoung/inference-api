@@ -1,16 +1,16 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, Response
 from typing import Literal
 from handling import api_error, format_response
 from lib import (
     classify,
     classify_group,
     get_image,
-    execute_with_threadpool,
 )
-from tesseract import evaluate_image
 import os
 from PIL.Image import Image
 from models.model_controller import ModelController
+from flask_swagger_ui import get_swaggerui_blueprint
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -21,6 +21,16 @@ ClassifyModel = Literal["ResNet500"]
 # Initialise the flask app
 app = Flask(__name__)
 
+# Swagger UI
+SWAGGER_URL = "/api"
+API_URL = "/static/swagger.yaml"
+
+SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
+    base_url=SWAGGER_URL, api_url=API_URL, config={"app_name": "Inference-API"}
+)
+
+# Blueprint registration
+app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 # Global reference to the model controller
 model_controller = ModelController()
@@ -28,18 +38,24 @@ model_controller.load_models()
 
 
 @app.route("/")
-def root():
-    """Root dir"""
-    return send_file(f"{dir_path}/../assets/index.html")
+def index():
+    """Return JSON data representing the loaded models available"""
+    return send_file(f"{dir_path}/static/index.html")
 
 
-@app.route("/models")
+@app.route("/ping")
+def ping():
+    """A basic ping endpoint to check online status"""
+    return Response(status=200)
+
+
+@app.route("/api/models")
 def models():
     """Return information about the current models loaded"""
     return model_controller.display_models()
 
 
-@app.route("/enrich", methods=["GET", "POST"])
+@app.route("/api/enrich", methods=["GET", "POST"])
 def enrich():
     """Classify a single entity through a provided mode and type
 
@@ -71,12 +87,11 @@ def enrich():
         if img is None:
             return api_error("could not generate image from src query paramter")
 
-        # Mode Param & Guard
-        enrich_mode = request.args.get("mode", default="classify").strip().lower()
-
         # Model
         model = request.args.get("model", default="ResNet").strip()
-        model = model_controller.find_model(model)  # Find the model from the controller
+
+        # Find the model from the controller
+        model = model_controller.find_model(model)
 
         if model is None:
             return api_error("model query parameter did not match any loaded models")
@@ -84,16 +99,7 @@ def enrich():
         # Return format
         format = request.args.get("format", default="img").strip()
 
-        # Run the specific mode based on the query param
-        match enrich_mode:
-            case "classify":
-                # Run Classification
-                res = classify(img, model, format)
-            case "ocr":
-                # Run OCR
-                res = evaluate_image(img)
-            case _:
-                return api_error("'mode query parameter was invalid")
+        res = classify(img, model, format)
 
     # POST REQUEST
     if request.method == "POST":
@@ -115,7 +121,6 @@ def enrich():
             )
 
         format = json.get("format", "default")
-        enrich_mode = json.get("mode", "classify")
 
         # Create images
         images = [get_image(url) for url in src]
@@ -126,12 +131,6 @@ def enrich():
         if images_filtered is None:
             return api_error("No images available to process post filter")
 
-        match enrich_mode:
-            case "classify":
-                res = classify_group(images_filtered, model, format)
-            case "ocr":
-                return api_error("OCR is currently unimplemented!")
-            case _:
-                return api_error("'mode query parameter was invalid")
+        res = classify_group(images_filtered, model, format)
 
     return format_response(res, format)
