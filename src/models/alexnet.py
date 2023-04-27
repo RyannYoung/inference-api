@@ -3,6 +3,7 @@ from torchvision import transforms
 from PIL.Image import Image
 import torch
 from torchvision import transforms
+from torchvision.models.alexnet import AlexNet_Weights
 
 
 class AlexNet(ModelBase):
@@ -15,7 +16,9 @@ class AlexNet(ModelBase):
         """
 
         # Load the Model
-        model = torch.hub.load("pytorch/vision:v0.10.0", "alexnet", pretrained=True)
+        model = torch.hub.load(
+            "pytorch/vision:v0.10.0", "alexnet", weights=AlexNet_Weights.DEFAULT
+        )
         model.eval()
 
         # Define the preprocess

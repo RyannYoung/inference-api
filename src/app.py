@@ -1,17 +1,17 @@
 from flask import Flask, request, send_file, Response
 from typing import Literal
 from handling import api_error, format_response
-from lib import (
-    classify,
-    classify_group,
-    get_image,
-)
+from lib import classify, classify_group, get_image, header
 import os
 from PIL.Image import Image
 from models.model_controller import ModelController
 from flask_swagger_ui import get_swaggerui_blueprint
+import warnings
+import os
 
+os.system("cls" if os.name == "nt" else "clear")
 
+warnings.filterwarnings("ignore")
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Classification Models
@@ -35,6 +35,12 @@ app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix=SWAGGER_URL)
 # Global reference to the model controller
 model_controller = ModelController()
 model_controller.load_models()
+
+# Header information
+print(header())
+print(
+    "For information and instructions on how to use the api, go to \033[1m\033[93m'/enrich'\033[0m\n"
+)
 
 
 @app.route("/")

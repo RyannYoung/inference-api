@@ -43,7 +43,7 @@ def execute_with_threadpool(lst: list, fn, *args):
 
 
 def get_image(url: str) -> PILImage | None:
-    """Convert an URL into a PIL Image
+    """Convert an URL into a PIL Image (but restrict to minimum size)
 
     Args:
         url (str): The URL to attempt to convert
@@ -142,3 +142,14 @@ def grid_images(imgs: list[PILImage], model: ModelBase) -> PILImage:
 
     # Convert back to a PIL Image
     return to_pil_image(grid)
+
+
+##########
+# fluff
+##########
+
+
+def header():
+    return """
+\033[92m█ █▄░█ █▀▀ █▀▀ █▀█ █▀▀ █▄░█ █▀▀ █▀▀   ▄▀█ █▀█ █
+█ █░▀█ █▀░ ██▄ █▀▄ ██▄ █░▀█ █▄▄ ██▄   █▀█ █▀▀ █\033[0m\n"""
