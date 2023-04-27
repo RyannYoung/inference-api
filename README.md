@@ -6,6 +6,7 @@ The goal of this server is to expose a highly configurable `/enrich` endpoint. T
 
 - [Inference API Server](#inference-api-server)
   - [Quickstart](#quickstart)
+  - [Swagger UI](#swagger-ui)
   - [Available endpoints](#available-endpoints)
     - [Examples](#examples)
   - [Options](#options)
@@ -22,9 +23,13 @@ Follow these steps to get started.
 flask --app src/app.py run
 ```
 
+## Swagger UI
+
+Go to the `/api` endpoint to view the swagger UI implementation. It provides working examples of how to use the endpoint. Which is likely more helpful than this doc
+
 ## Available endpoints
 
-The primary endpoint for the api is the `/enrich` endpoint. This endpoint is highly configurable exposes the following options as query or POST body params (depending on method type)
+The primary endpoint for the api is the `/api/enrich` endpoint. This endpoint is highly configurable exposes the following options as query or POST body params (depending on method type)
 - `src`: The target(s) in the form of a single string (query) or string[] (post body)
 - `mode`: The type of enrichment to run (i.e., classification, OCR)
 - `model`: The type of model to run. Optional configuration, only used in specific modes.
@@ -33,15 +38,15 @@ The primary endpoint for the api is the `/enrich` endpoint. This endpoint is hig
 
 ``` js
 // Perform image classifcation and return as image
-POST /enrich
+POST /api/enrich
 {
   "src": [
     "https://www.example.com/images/dog.jpg",
     "https://www.example.com/images/cat.jpg",
     "https://www.example.com/images/penguin.jpg",
   ],
-    "mode": "classify",
-    "format": "image"
+  "format": "image",
+  "model": "ResNet"
 }
 ```
 
@@ -67,13 +72,6 @@ Presented below are the exposed configuration options.
       <td><b>None (required)</b></td>
       <td>The targets (typically a remote image url)</td>
     </tr>
-    <!-- Mode -->
-    <tr>
-      <td><code>mode</code></td>
-      <td><code>"classify" | "ocr"</code></td>
-      <td><code>"classify"</code></td>
-      <td>The type of enrichment mode to run</td>
-    </tr>  
     <!-- Format -->
     <tr>
       <td><code>format</code></td>

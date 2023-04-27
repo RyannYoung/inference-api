@@ -7,6 +7,7 @@ from models.vit import Vit
 from models.gpt import Gpt
 from models.blip import Blip
 from models.tesseract import Tesseract
+from functools import cache
 
 # Define models to pre-load
 preloaded_models: list[ModelBase] = [
@@ -48,6 +49,7 @@ class ModelController:
                 matched_model = model
         return matched_model
 
+    @cache
     def display_models(self) -> list:
         """Returns a descriptive string about each of the available models
 
@@ -69,6 +71,7 @@ class ModelController:
         available_models = [model.alias() for model in self.models]
         return " ".join(available_models)
 
+    @cache
     def load_models(self, num_threads: int = 8) -> None:
         """Loads all models using threading"""
         pool = ThreadPool(num_threads)

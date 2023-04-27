@@ -4,6 +4,7 @@ from PIL.Image import Image
 import torch
 from torchvision import transforms
 from torchvision.models.alexnet import AlexNet_Weights
+from functools import cache
 
 
 class AlexNet(ModelBase):
