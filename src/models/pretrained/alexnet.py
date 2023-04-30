@@ -63,7 +63,7 @@ class Alexnet(ModelBase):
         labels = []
 
         # Read the categories
-        with open("assets/imagenet_classes.txt", "r") as f:
+        with open("src/static/imagenet_classes.txt", "r") as f:
             categories = [s.strip() for s in f.readlines()]
 
         # Show top categories per image
