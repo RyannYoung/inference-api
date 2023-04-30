@@ -7,7 +7,7 @@ from torchvision.models.alexnet import AlexNet_Weights
 from functools import cache
 
 
-class AlexNet(ModelBase):
+class Alexnet(ModelBase):
     def load(self) -> None:
         """Use the init function to load the model
 

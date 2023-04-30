@@ -12,7 +12,7 @@ import torch
 from PIL import ImageDraw, ImageFont
 
 
-class ResNet(ModelBase):
+class Resnet(ModelBase):
     def load(self) -> None:
         self.processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
         self.model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50")
@@ -54,7 +54,6 @@ class ResNet(ModelBase):
 
         draw = ImageDraw.Draw(img)
         for result in results:
-
             # Draw bounding box information
             draw.rectangle(result["box"], outline="red", width=2)
 
